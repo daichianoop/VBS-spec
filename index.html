@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Booking System | Technical Specification Interactive Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Font Import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* Warm neutral background */
+            color: #1c1917; /* Stone 900 */
+        }
+
+        /* Chart Container Styling - Mandatory per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e7e5e4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a8a29e;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #78716c;
+        }
+
+        /* Card Hover Effects */
+        .interactive-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Flowchart connector lines */
+        .flow-line {
+            position: absolute;
+            background-color: #d6d3d1;
+            z-index: 0;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Sand) with Technical Blue/Green Accents -->
+    <!-- Application Structure Plan: 
+         1. Executive Overview: High-level dashboard summary of the system goals and scale.
+         2. Tech Stack & Architecture: Interactive visual flow of the Next.js -> .NET -> SQL architecture.
+         3. Data & Schema: Interactive database explorer and Venue visualization chart to understand the data model.
+         4. Logic Simulator: An interactive 'Overlap Checker' tool to demonstrate the core business logic (C# algorithm translated to JS).
+         5. UX Flow: Tabbed interface to walk through Student vs. Admin journeys (Wireframes translation).
+         6. Robustness & Deployment: Checklist of mandatory technical requirements and deployment steps.
+         Rationale: This structure moves from the 'What' (Overview) to the 'How' (Architecture/Data), then the 'Logic' (Simulator), and finally the 'Execution' (Deployment), providing a complete mental model for a developer or stakeholder.
+    -->
+    <!-- Visualization & Content Choices:
+         - Venue Distribution (Doughnut Chart): Goal -> Inform/Compare. Viz -> Chart.js. Interaction -> Hover for counts. Justification -> Visualizes the scale of 199 venues across types (A/B blocks vs LTs).
+         - Architecture Flow (HTML/CSS): Goal -> Organize/Relationships. Viz -> Flexbox/Grid Cards. Interaction -> Hover highlights. Justification -> Clearer than text for understanding data flow. NO Mermaid used.
+         - Logic Simulator (JS Input/Output): Goal -> Change/Understand. Viz -> HTML Form & Dynamic Feedback. Interaction -> Input times to test "Overlap". Justification -> "Show, don't just tell" the complex overlap algorithm.
+         - Schema Explorer (Interactive List): Goal -> Organize. Viz -> Dynamic List/Details View. Interaction -> Click table to view columns. Justification -> Better than a long static list of SQL code.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-900 text-stone-100 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl tracking-tight">VenueBook<span class="text-sky-400">.Spec</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Overview</a>
+                        <a href="#architecture" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Architecture</a>
+                        <a href="#data" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Data & Schema</a>
+                        <a href="#logic" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Logic Simulator</a>
+                        <a href="#deployment" class="hover:bg-stone-700 px-3 py-2 rounded-md text-sm font-medium transition">Deployment</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- Section 1: Executive Overview -->
+        <section id="overview" class="animate-fade-in">
+            <div class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-stone-900 mb-4">Venue Booking System Specification</h1>
+                <p class="text-xl text-stone-600 max-w-3xl mx-auto">
+                    A robust, real-time reservation platform for ~200 users and ~200 venues, eliminating manual conflicts through centralized logic.
+                </p>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 interactive-card">
+                    <div class="text-3xl mb-2">👥</div>
+                    <h3 class="text-lg font-semibold text-stone-800">Users</h3>
+                    <p class="text-3xl font-bold text-sky-600">~200</p>
+                    <p class="text-sm text-stone-500 mt-2">Student Reps & Admins</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 interactive-card">
+                    <div class="text-3xl mb-2">🏢</div>
+                    <h3 class="text-lg font-semibold text-stone-800">Venues</h3>
+                    <p class="text-3xl font-bold text-emerald-600">199</p>
+                    <p class="text-sm text-stone-500 mt-2">Classrooms, LTs, OATs, Audis</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-stone-200 interactive-card">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <h3 class="text-lg font-semibold text-stone-800">Stack</h3>
+                    <p class="text-xl font-bold text-stone-800">Next.js + .NET 8</p>
+                    <p class="text-sm text-stone-500 mt-2">Backed by SQL Server</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Architecture & Tech Stack -->
+        <section id="architecture" class="scroll-mt-20">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">System Architecture</h2>
+                <p class="text-stone-600">
+                    The system follows a tiered architecture separating concerns between the interactive frontend, the logical API gateway, and the data persistence layer.
+                </p>
+            </div>
+
+            <!-- Architecture Diagram (CSS Grid/Flex) -->
+            <div class="bg-white p-8 rounded-xl shadow-lg border border-stone-200 overflow-hidden relative">
+                <div class="flex flex-col md:flex-row justify-between items-stretch gap-4 md:gap-8 relative z-10">
+                    
+                    <!-- Frontend -->
+                    <div class="flex-1 bg-sky-50 border border-sky-200 rounded-lg p-6 flex flex-col items-center text-center interactive-card">
+                        <div class="text-4xl mb-3">💻</div>
+                        <h3 class="font-bold text-sky-900 text-lg">Frontend (Client)</h3>
+                        <p class="text-sm font-semibold text-sky-700">Next.js + Tailwind</p>
+                        <ul class="text-xs text-sky-800 mt-4 space-y-1 text-left w-full list-disc pl-4">
+                            <li>Server-Side Rendering (SSR)</li>
+                            <li>Hosted on Vercel</li>
+                            <li>Interactive Dashboard</li>
+                        </ul>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="hidden md:flex items-center justify-center text-stone-400 text-2xl">
+                        ➡ REST API ➡
+                    </div>
+                    <div class="md:hidden flex items-center justify-center text-stone-400 py-2">
+                        ⬇ REST API ⬇
+                    </div>
+
+                    <!-- Backend -->
+                    <div class="flex-1 bg-indigo-50 border border-indigo-200 rounded-lg p-6 flex flex-col items-center text-center interactive-card">
+                        <div class="text-4xl mb-3">⚙️</div>
+                        <h3 class="font-bold text-indigo-900 text-lg">API Gateway</h3>
+                        <p class="text-sm font-semibold text-indigo-700">ASP.NET Core 8 Web API</p>
+                        <ul class="text-xs text-indigo-800 mt-4 space-y-1 text-left w-full list-disc pl-4">
+                            <li>Business Logic & Auth</li>
+                            <li>Overlap Algorithms</li>
+                            <li>Hosted on Azure App Service</li>
+                        </ul>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="hidden md:flex items-center justify-center text-stone-400 text-2xl">
+                        ➡ EF Core ➡
+                    </div>
+                    <div class="md:hidden flex items-center justify-center text-stone-400 py-2">
+                        ⬇ EF Core ⬇
+                    </div>
+
+                    <!-- Database -->
+                    <div class="flex-1 bg-emerald-50 border border-emerald-200 rounded-lg p-6 flex flex-col items-center text-center interactive-card">
+                        <div class="text-4xl mb-3">🗄️</div>
+                        <h3 class="font-bold text-emerald-900 text-lg">Data Layer</h3>
+                        <p class="text-sm font-semibold text-emerald-700">SQL Server</p>
+                        <ul class="text-xs text-emerald-800 mt-4 space-y-1 text-left w-full list-disc pl-4">
+                            <li>Relational Integrity</li>
+                            <li>Complex Queries</li>
+                            <li>Azure SQL Database</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Data Schema & Venues -->
+        <section id="data" class="scroll-mt-20">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Database Schema & Venue Distribution</h2>
+                <p class="text-stone-600">
+                    The robust SQL schema ensures data integrity, while the extensive venue list covers all campus facilities.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Interactive Schema Explorer -->
+                <div class="bg-white rounded-xl shadow-md border border-stone-200 flex flex-col h-full">
+                    <div class="p-4 border-b border-stone-200 bg-stone-50 rounded-t-xl">
+                        <h3 class="font-semibold text-stone-800">Schema Explorer</h3>
+                        <p class="text-xs text-stone-500">Click a table to view definition</p>
+                    </div>
+                    <div class="flex flex-1 overflow-hidden h-[400px]">
+                        <!-- Table List -->
+                        <div class="w-1/3 border-r border-stone-200 bg-stone-50 overflow-y-auto">
+                            <button onclick="showSchema('users')" class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-white focus:bg-white border-l-4 border-transparent focus:border-sky-500 transition schema-btn active-schema-btn" id="btn-users">Users</button>
+                            <button onclick="showSchema('venues')" class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-white focus:bg-white border-l-4 border-transparent focus:border-sky-500 transition schema-btn" id="btn-venues">Venues</button>
+                            <button onclick="showSchema('bookings')" class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-white focus:bg-white border-l-4 border-transparent focus:border-sky-500 transition schema-btn" id="btn-bookings">Bookings</button>
+                            <button onclick="showSchema('audit')" class="w-full text-left px-4 py-3 text-sm font-medium hover:bg-white focus:bg-white border-l-4 border-transparent focus:border-sky-500 transition schema-btn" id="btn-audit">AuditLogs</button>
+                        </div>
+                        <!-- Details View -->
+                        <div class="w-2/3 p-4 overflow-y-auto bg-white font-mono text-xs">
+                            <div id="schema-content" class="text-stone-700">
+                                <!-- Content injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Venue Distribution Chart -->
+                <div class="bg-white rounded-xl shadow-md border border-stone-200 p-6">
+                    <h3 class="font-semibold text-stone-800 mb-4">Venue Capacity Breakdown</h3>
+                    <p class="text-sm text-stone-500 mb-4">
+                        Distribution of the 199 assignable spaces across campus blocks.
+                    </p>
+                    
+                    <!-- Chart Container -->
+                    <div class="chart-container">
+                        <canvas id="venueChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs text-stone-600">
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>Classroom Block A (88)</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-400 mr-2"></span>Classroom Block B (88)</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-indigo-500 mr-2"></span>Lecture Theatres (12)</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>Auditoriums (6)</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>OAT (5)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Business Logic Simulator -->
+        <section id="logic" class="scroll-mt-20">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Core Logic: The Overlap Guard</h2>
+                <p class="text-stone-600">
+                    The backend enforces a strict overlap policy to prevent double bookings. Test the C# algorithm logic interactively below.
+                </p>
+            </div>
+
+            <div class="bg-stone-800 text-stone-100 rounded-xl p-6 md:p-8 shadow-xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- The Algorithm Explanation -->
+                    <div>
+                        <h3 class="text-xl font-bold text-sky-400 mb-4">C# Algorithm</h3>
+                        <p class="text-stone-400 mb-4 text-sm">
+                            Before any insert/update, the system checks:
+                        </p>
+                        <div class="bg-black/50 p-4 rounded-lg font-mono text-sm text-green-400 border border-stone-700">
+                            (NewStart < ExistingEnd) AND <br>
+                            (NewEnd > ExistingStart) AND <br>
+                            Status != Rejected
+                        </div>
+                        <p class="text-stone-400 mt-4 text-sm">
+                            If this evaluates to <strong>TRUE</strong>, the request is rejected immediately as a 409 Conflict.
+                        </p>
+                    </div>
+
+                    <!-- Interactive Simulator -->
+                    <div class="bg-stone-700/50 p-6 rounded-lg border border-stone-600">
+                        <h3 class="text-lg font-bold mb-4">Try it yourself</h3>
+                        
+                        <!-- Existing Booking Visualization -->
+                        <div class="mb-6">
+                            <div class="flex justify-between text-xs text-stone-400 mb-1">
+                                <span>1:00 PM</span>
+                                <span>Existing Booking (2PM - 4PM)</span>
+                                <span>5:00 PM</span>
+                            </div>
+                            <div class="h-8 bg-stone-600 rounded-full relative overflow-hidden">
+                                <!-- The 'Existing' Booking Block: 2PM (25%) to 4PM (75%) assuming 1PM-5PM scale -->
+                                <div class="absolute top-0 bottom-0 left-[25%] w-[50%] bg-red-500/80 flex items-center justify-center text-xs font-bold border-l border-r border-red-400">
+                                    BOOKED
+                                </div>
+                                <!-- The 'New' Request Visualization (Dynamic) -->
+                                <div id="request-viz" class="absolute top-2 bottom-2 bg-sky-400/80 transition-all duration-300 rounded-sm opacity-0"></div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-stone-300 mb-1">New Request Start</label>
+                                    <select id="sim-start" class="w-full bg-stone-800 border border-stone-600 rounded p-2 text-sm focus:border-sky-500 focus:outline-none">
+                                        <option value="13:00">1:00 PM</option>
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="14:30">2:30 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="15:30">3:30 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="16:30">4:30 PM</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-stone-300 mb-1">New Request End</label>
+                                    <select id="sim-end" class="w-full bg-stone-800 border border-stone-600 rounded p-2 text-sm focus:border-sky-500 focus:outline-none">
+                                        <option value="13:30">1:30 PM</option>
+                                        <option value="14:00">2:00 PM</option>
+                                        <option value="14:30">2:30 PM</option>
+                                        <option value="15:00">3:00 PM</option>
+                                        <option value="15:30">3:30 PM</option>
+                                        <option value="16:00">4:00 PM</option>
+                                        <option value="16:30">4:30 PM</option>
+                                        <option value="17:00">5:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button onclick="checkOverlap()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 px-4 rounded transition">
+                                Check Availability
+                            </button>
+                        </div>
+
+                        <!-- Result -->
+                        <div id="sim-result" class="mt-4 p-3 rounded text-center text-sm font-bold hidden">
+                            <!-- Result text injected via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: User Flow Wireframes -->
+        <section id="ux" class="scroll-mt-20">
+             <div class="mb-6">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">User Interaction Flows</h2>
+                <p class="text-stone-600">
+                    Distinct journeys for Student Representatives (Booking) and Administrators (Approval & Oversight).
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border border-stone-200 overflow-hidden">
+                <!-- Tabs -->
+                <div class="flex border-b border-stone-200">
+                    <button onclick="switchTab('student')" id="tab-student" class="flex-1 py-4 text-center font-medium text-sky-600 border-b-2 border-sky-600 bg-sky-50 transition">Student Representative Journey</button>
+                    <button onclick="switchTab('admin')" id="tab-admin" class="flex-1 py-4 text-center font-medium text-stone-500 hover:text-stone-700 transition">Admin Approval Journey</button>
+                </div>
+
+                <!-- Content Container -->
+                <div class="p-6 md:p-8 min-h-[400px]">
+                    <!-- Student Flow -->
+                    <div id="content-student" class="space-y-6 animate-fade-in">
+                        <div class="flex flex-col md:flex-row gap-4 items-start">
+                            <!-- Step 1 -->
+                            <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-sky-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Login</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600">
+                                    Input: User/Pass<br>
+                                    System detects Role.<br>
+                                    Redirect -> Dashboard
+                                </div>
+                            </div>
+                             <div class="hidden md:block text-stone-300 text-2xl pt-6">➡</div>
+                             <!-- Step 2 -->
+                            <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-sky-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Dashboard</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600 space-y-2">
+                                    <div class="flex gap-1"><span class="w-3 h-3 bg-green-500 rounded-sm"></span> Available (Click to Book)</div>
+                                    <div class="flex gap-1"><span class="w-3 h-3 bg-red-500 rounded-sm"></span> Booked (Hover details)</div>
+                                </div>
+                            </div>
+                            <div class="hidden md:block text-stone-300 text-2xl pt-6">➡</div>
+                            <!-- Step 3 -->
+                            <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-sky-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Booking Modal</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600">
+                                    Auto-fill Society Name.<br>
+                                    Input: Purpose, Time, FIC.<br>
+                                    <strong>Validation:</strong> Start < End.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-sky-50 border border-sky-100 p-4 rounded-lg mt-4 text-sm text-sky-800">
+                            <strong>Key Feature:</strong> Venue Cards are color-coded (Green/Red/Yellow). Clicking a green card opens the modal pre-filled with that room's details.
+                        </div>
+                    </div>
+
+                    <!-- Admin Flow -->
+                    <div id="content-admin" class="space-y-6 hidden animate-fade-in">
+                        <div class="flex flex-col md:flex-row gap-4 items-start">
+                             <!-- Step 1 -->
+                             <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Admin Dash</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600">
+                                    View "Approval Queue".<br>
+                                    Sorted by Date (Soonest).<br>
+                                    Badge Counter: "5 Pending"
+                                </div>
+                            </div>
+                             <div class="hidden md:block text-stone-300 text-2xl pt-6">➡</div>
+                             <!-- Step 2 -->
+                            <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Super-Edit Modal</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600">
+                                    <strong>Review Request:</strong><br>
+                                    Conflict found? Edit "Time" or "Venue" directly in modal.
+                                </div>
+                            </div>
+                            <div class="hidden md:block text-stone-300 text-2xl pt-6">➡</div>
+                            <!-- Step 3 -->
+                            <div class="flex-1 bg-white border border-stone-200 p-4 rounded-lg shadow-sm relative">
+                                <div class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                                <h4 class="font-bold text-stone-800 mb-2 mt-2">Approve/Reject</h4>
+                                <div class="bg-stone-100 p-3 rounded text-xs text-stone-600">
+                                    System runs <strong>Overlap Check</strong> again on edited data.<br>
+                                    Updates Status & Audit Logs.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-lg mt-4 text-sm text-indigo-800">
+                            <strong>"Super-Edit" Policy:</strong> Admins have the unique power to modify the time or venue of a request <em>during</em> the approval process to resolve conflicts without forcing the student to resubmit.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Deployment & Robustness -->
+        <section id="deployment" class="scroll-mt-20 mb-20">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-stone-900 mb-2">Deployment & Robustness</h2>
+                <p class="text-stone-600">
+                    Mandatory requirements for production readiness and deployment strategy.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Robustness Checklist -->
+                <div class="bg-stone-900 text-stone-100 p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-emerald-400 mb-4">Mandatory Must-Haves</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="text-emerald-400 mr-2">✓</span>
+                            <div>
+                                <strong class="block text-sm">Atomic Transactions</strong>
+                                <span class="text-xs text-stone-400">Overlap check + Insert must be a single serializable transaction to prevent race conditions.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-emerald-400 mr-2">✓</span>
+                            <div>
+                                <strong class="block text-sm">UTC Standardization</strong>
+                                <span class="text-xs text-stone-400">Database stores UTC. Backend sends UTC (ISO 8601). Frontend converts to Local Time.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-emerald-400 mr-2">✓</span>
+                            <div>
+                                <strong class="block text-sm">Immutable Audit Logs</strong>
+                                <span class="text-xs text-stone-400">Append-only table. No DELETE API endpoint exists for logs.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-emerald-400 mr-2">✓</span>
+                            <div>
+                                <strong class="block text-sm">Zero Trust Security</strong>
+                                <span class="text-xs text-stone-400">All Admin endpoints decorated with <code>[Authorize(Roles="Admin")]</code>.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Deployment Timeline -->
+                <div class="bg-white border border-stone-200 p-6 rounded-xl shadow-sm">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">Deployment Pipeline</h3>
+                    <div class="relative pl-8 border-l-2 border-stone-200 space-y-8">
+                        <!-- Step 1 -->
+                        <div class="relative">
+                            <div class="absolute -left-[39px] bg-white border-2 border-stone-400 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-stone-600">1</div>
+                            <h4 class="font-bold text-sm text-stone-900">Database (Azure SQL)</h4>
+                            <p class="text-xs text-stone-500">Run Migration Scripts. Seed 199 Venues via Console App.</p>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="relative">
+                            <div class="absolute -left-[39px] bg-white border-2 border-stone-400 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-stone-600">2</div>
+                            <h4 class="font-bold text-sm text-stone-900">Backend (Azure App Service)</h4>
+                            <p class="text-xs text-stone-500">Deploy .NET API. Config ConnectionStrings & JWT Secrets.</p>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="relative">
+                            <div class="absolute -left-[39px] bg-white border-2 border-stone-400 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-stone-600">3</div>
+                            <h4 class="font-bold text-sm text-stone-900">Frontend (Vercel)</h4>
+                            <p class="text-xs text-stone-500">Deploy Next.js. Set <code>NEXT_PUBLIC_API_URL</code> to Azure endpoint.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-8 border-t border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm">Based on Venue Booking System Technical Specification v1.3</p>
+            <p class="text-xs mt-2">Generated for Implementation Planning</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. Schema Explorer Logic ---
+        const schemas = {
+            users: `
+CREATE TABLE Users (
+  UserID INT PRIMARY KEY IDENTITY(1,1),
+  Username NVARCHAR(50) NOT NULL UNIQUE,
+  PasswordHash NVARCHAR(255) NOT NULL,
+  Role NVARCHAR(20) CHECK (Role IN ('Admin', 'StudentRep')),
+  FullName NVARCHAR(100) NOT NULL,
+  ContactNo NVARCHAR(15) NOT NULL,
+  SocietyName NVARCHAR(100) NULL,
+  IsActive BIT DEFAULT 1
+);`,
+            venues: `
+CREATE TABLE Venues (
+  VenueID INT PRIMARY KEY IDENTITY(1,1),
+  VenueCode NVARCHAR(20) NOT NULL UNIQUE, -- e.g. B001
+  VenueType NVARCHAR(50) NOT NULL, -- Class, LT, OAT, Audi
+  Block NVARCHAR(10) NOT NULL,
+  Floor INT NULL,
+  Capacity INT DEFAULT 60,
+  IsActive BIT DEFAULT 1
+);`,
+            bookings: `
+CREATE TABLE Bookings (
+  BookingID INT PRIMARY KEY IDENTITY(1,1),
+  VenueID INT FK,
+  RequestedByUserID INT FK,
+  SocietyName NVARCHAR(100),
+  Purpose NVARCHAR(500),
+  StartTime DATETIME2 NOT NULL, -- UTC
+  EndTime DATETIME2 NOT NULL,   -- UTC
+  BookingStatus NVARCHAR(20) DEFAULT 'Pending',
+  ApprovedByUserID INT NULL,
+  AdminNotes NVARCHAR(MAX) NULL
+);`,
+            audit: `
+CREATE TABLE AuditLogs (
+  LogID INT PRIMARY KEY IDENTITY(1,1),
+  Action NVARCHAR(50) NOT NULL,
+  PerformedByUserID INT NOT NULL,
+  TargetBookingID INT NULL,
+  OldValues NVARCHAR(MAX) NULL, -- JSON
+  NewValues NVARCHAR(MAX) NULL, -- JSON
+  Timestamp DATETIME2 DEFAULT GETUTCDATE()
+);`
+        };
+
+        function showSchema(table) {
+            // Update Text
+            const content = document.getElementById('schema-content');
+            content.innerHTML = `<pre class="whitespace-pre-wrap text-xs md:text-sm bg-stone-50 p-4 rounded border border-stone-200">${schemas[table].trim()}</pre>`;
+            
+            // Update Buttons
+            document.querySelectorAll('.schema-btn').forEach(btn => {
+                btn.classList.remove('border-sky-500', 'bg-white', 'text-sky-700');
+                btn.classList.add('border-transparent');
+            });
+            const activeBtn = document.getElementById(`btn-${table}`);
+            activeBtn.classList.remove('border-transparent');
+            activeBtn.classList.add('border-sky-500', 'bg-white', 'text-sky-700');
+        }
+
+        // Initialize Schema
+        showSchema('users');
+
+        // --- 2. Chart.js Venue Distribution ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('venueChart').getContext('2d');
+            
+            // Data derived from Spec:
+            // A Block: 88, B Block: 88, LTs: 12, OAT: 5, Audi: 6
+            const venueData = {
+                labels: ['Classroom A', 'Classroom B', 'Lecture Theatres', 'Auditoriums', 'OAT'],
+                datasets: [{
+                    data: [88, 88, 12, 6, 5],
+                    backgroundColor: [
+                        '#3b82f6', // blue-500
+                        '#60a5fa', // blue-400
+                        '#6366f1', // indigo-500
+                        '#f59e0b', // amber-500
+                        '#10b981'  // emerald-500
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: venueData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Custom legend used in HTML
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = 199;
+                                    const percentage = ((value / total) * 100).toFixed(1) + '%';
+                                    return `${label}: ${value} (${percentage})`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        });
+
+        // --- 3. Overlap Logic Simulator ---
+        function checkOverlap() {
+            // Existing Booking: 2:00 PM (14:00) to 4:00 PM (16:00)
+            const existingStart = 14.0;
+            const existingEnd = 16.0;
+
+            // Get Input
+            const startStr = document.getElementById('sim-start').value;
+            const endStr = document.getElementById('sim-end').value;
+
+            // Convert "13:30" to 13.5 for easy math
+            const parseTime = (str) => {
+                const [h, m] = str.split(':').map(Number);
+                return h + (m / 60);
+            };
+
+            const newStart = parseTime(startStr);
+            const newEnd = parseTime(endStr);
+            const resultDiv = document.getElementById('sim-result');
+            const vizBar = document.getElementById('request-viz');
+
+            // Visualization mapping (1PM = 0%, 5PM = 100%, Span = 4 hours)
+            const mapToPct = (time) => ((time - 13) / 4) * 100;
+
+            // Update Viz Bar
+            const startPct = mapToPct(newStart);
+            const widthPct = mapToPct(newEnd) - startPct;
+            
+            vizBar.style.left = `${Math.max(0, startPct)}%`;
+            vizBar.style.width = `${Math.max(0, widthPct)}%`;
+            vizBar.style.opacity = '1';
+
+            // Validate Input
+            if (newStart >= newEnd) {
+                resultDiv.className = "mt-4 p-3 rounded text-center text-sm font-bold bg-stone-600 text-stone-200";
+                resultDiv.innerHTML = "⚠️ End time must be after Start time";
+                resultDiv.classList.remove('hidden');
+                vizBar.style.backgroundColor = '#78716c'; // Grey
+                return;
+            }
+
+            // CORE LOGIC ALGORITHM
+            // (NewStart < ExistingEnd) AND (NewEnd > ExistingStart)
+            const isOverlap = (newStart < existingEnd) && (newEnd > existingStart);
+
+            if (isOverlap) {
+                resultDiv.className = "mt-4 p-3 rounded text-center text-sm font-bold bg-red-500/20 text-red-300 border border-red-500/50";
+                resultDiv.innerHTML = "❌ CONFLICT DETECTED <br><span class='font-normal text-xs'>Algorithm returned TRUE. 409 Conflict.</span>";
+                vizBar.style.backgroundColor = '#ef4444'; // Red
+            } else {
+                resultDiv.className = "mt-4 p-3 rounded text-center text-sm font-bold bg-green-500/20 text-green-300 border border-green-500/50";
+                resultDiv.innerHTML = "✅ AVAILABLE <br><span class='font-normal text-xs'>Booking Proceeding...</span>";
+                vizBar.style.backgroundColor = '#10b981'; // Green
+            }
+            resultDiv.classList.remove('hidden');
+        }
+
+        // --- 4. User Journey Tabs ---
+        function switchTab(role) {
+            const studentContent = document.getElementById('content-student');
+            const adminContent = document.getElementById('content-admin');
+            const studentTab = document.getElementById('tab-student');
+            const adminTab = document.getElementById('tab-admin');
+
+            if (role === 'student') {
+                studentContent.classList.remove('hidden');
+                adminContent.classList.add('hidden');
+                
+                studentTab.classList.add('text-sky-600', 'border-b-2', 'border-sky-600', 'bg-sky-50');
+                studentTab.classList.remove('text-stone-500');
+                
+                adminTab.classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600', 'bg-indigo-50');
+                adminTab.classList.add('text-stone-500');
+            } else {
+                studentContent.classList.add('hidden');
+                adminContent.classList.remove('hidden');
+
+                studentTab.classList.remove('text-sky-600', 'border-b-2', 'border-sky-600', 'bg-sky-50');
+                studentTab.classList.add('text-stone-500');
+                
+                adminTab.classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600', 'bg-indigo-50');
+                adminTab.classList.remove('text-stone-500');
+            }
+        }
+    </script>
+</body>
+</html>
